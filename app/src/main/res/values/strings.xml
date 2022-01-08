@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MyWeatherInfo</string>
+    <string name="city">city</string>
+    <string name="time">time</string>
+    <string name="temp">temperature</string>
+    <string name="wind">wind</string>
+</resources>

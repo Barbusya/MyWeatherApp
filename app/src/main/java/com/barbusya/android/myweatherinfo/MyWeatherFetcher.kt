@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.barbusya.android.myweatherinfo.api.MyWeatherApi
+import com.barbusya.android.myweatherinfo.api.MyWeatherInterceptor
 import com.barbusya.android.myweatherinfo.api.WeatherResponse
+import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -12,24 +14,37 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
-private const val TAG = "MyWeatherFetchr"
+private const val TAG = "MyWeatherFetcher"
 
 class MyWeatherFetcher {
 
     private val myWeatherApi: MyWeatherApi
 
     init {
+        val client = OkHttpClient.Builder()
+            .addInterceptor(MyWeatherInterceptor())
+            .build()
+
         val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("http://api.weatherapi.com/")
             .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
             .build()
 
         myWeatherApi =  retrofit.create(MyWeatherApi::class.java)
     }
 
     fun fetchWeather(): LiveData<MutableList<String>> {
+        return fetchWeatherMetadata(myWeatherApi.fetchWeather("Moscow"))
+    }
+
+    fun searchWeather(query: String): LiveData<MutableList<String>> {
+        return fetchWeatherMetadata(myWeatherApi.searchWeather(query))
+    }
+
+    private fun fetchWeatherMetadata(myWeatherRequest: Call<WeatherResponse>):
+            LiveData<MutableList<String>> {
         val responseLiveData: MutableLiveData<MutableList<String>> = MutableLiveData()
-        val myWeatherRequest: Call<WeatherResponse> = myWeatherApi.fetchWeather()
 
         myWeatherRequest.enqueue(object : Callback<WeatherResponse> {
 
